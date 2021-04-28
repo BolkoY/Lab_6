@@ -17,10 +17,17 @@ public class BouncingBall implements Runnable {
     // Текущие координаты мяча
     private double x;
     private double y;
+    public static int n = 1;
+
     // Вертикальная и горизонтальная компонента скорости
     private int speed;
     private double speedX;
     private double speedY;
+
+    public Color getColor() {
+        return color;
+    }
+
     // Конструктор класса BouncingBall
     public BouncingBall(Field field) {
         // Необходимо иметь ссылку на поле, по которому прыгает мяч,
@@ -45,10 +52,13 @@ public class BouncingBall implements Runnable {
         speedX = 3*Math.cos(angle);
         speedY = 3*Math.sin(angle);
         // Цвет мяча выбирается случайно
-        color = new Color((float)Math.random(), (float)Math.random(),
-
-        (float)Math.random());
-
+        if (n==1 || n==3){
+            color = Color.RED;
+            n++;
+        }else {
+            color = new Color((float) Math.random(), (float) Math.random(), (float) Math.random());
+            n++;
+        }
         // Начальное положение мяча случайно
         x = Math.random()*(field.getSize().getWidth()-2*radius) + radius;
         y = Math.random()*(field.getSize().getHeight()-2*radius) + radius;
@@ -62,48 +72,49 @@ public class BouncingBall implements Runnable {
     // то завершается и поток
     public void run() {
         try {
-        // Крутим бесконечный цикл, т.е. пока нас не прервут,
-        // мы не намерены завершаться
-        while(true) {
-        // Синхронизация потоков на самом объекте поля
-        // Если движение разрешено - управление будет
-        // возвращено в метод
-        // В противном случае - активный поток заснѐт
-        field.canMove(this);
-        if (x + speedX <= radius) {
-        // Достигли левой стенки, отскакиваем право
-        speedX = -speedX;
-        x = radius;
-        } else
-        if (x + speedX >= field.getWidth() - radius) {
-        // Достигли правой стенки, отскок влево
-        speedX = -speedX;
-        x=new Double(field.getWidth()-radius).intValue();
-        } else
-        if (y + speedY <= radius) {
-        // Достигли верхней стенки
-        speedY = -speedY;
-        y = radius;
-        } else
-        if (y + speedY >= field.getHeight() - radius) {
-        // Достигли нижней стенки
-        speedY = -speedY;
-        y=new Double(field.getHeight()-radius).intValue();
-        } else {
-        // Просто смещаемся
-        x += speedX;
-        y += speedY;
-    }
-        // Засыпаем на X миллисекунд, где X определяется
-        // исходя из скорости
-        // Скорость = 1 (медленно), засыпаем на 15 мс.
-        // Скорость = 15 (быстро), засыпаем на 1 мс.
-        Thread.sleep(16-speed);
-        }
+            // Крутим бесконечный цикл, т.е. пока нас не прервут,
+            // мы не намерены завершаться
+            while(!Thread.currentThread().isInterrupted()) {
+                // Синхронизация потоков на самом объекте поля
+                // Если движение разрешено - управление будет
+                // возвращено в метод
+                // В противном случае - активный поток заснѐт
+                field.canMove(this);
+                if (x + speedX <= radius) {
+                    // Достигли левой стенки, отскакиваем право
+                    speedX = -speedX;
+                    x = radius;
+                } else
+                if (x + speedX >= field.getWidth() - radius) {
+                    // Достигли правой стенки, отскок влево
+                    speedX = -speedX;
+                    x=new Double(field.getWidth()-radius).intValue();
+                } else
+                if (y + speedY <= radius) {
+                    // Достигли верхней стенки
+                    speedY = -speedY;
+                    y = radius;
+                } else
+                if (y + speedY >= field.getHeight() - radius) {
+                    // Достигли нижней стенки
+                    speedY = -speedY;
+                    y=new Double(field.getHeight()-radius).intValue();
+                } else {
+                    // Просто смещаемся
+                    x += speedX;
+                    y += speedY;
+                }
+            // Засыпаем на X миллисекунд, где X определяется
+            // исходя из скорости
+            // Скорость = 1 (медленно), засыпаем на 15 мс.
+            // Скорость = 15 (быстро), засыпаем на 1 мс.
+            Thread.sleep(16-speed);
+            }
         } catch (InterruptedException ex) {
             // Если нас прервали, то ничего не делаем
             // и просто выходим (завершаемся)
             }
+            Thread.interrupted();
         }
     // Метод прорисовки самого себя
     public void paint(Graphics2D canvas) {

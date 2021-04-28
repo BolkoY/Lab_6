@@ -13,8 +13,13 @@ import javax.swing.Timer;
 public class Field extends JPanel {
     // Флаг приостановленности движения
     private boolean paused;
+    private boolean paused1;
+    public Color color1=Color.RED;
+
     // Динамический список скачущих мячей
     private ArrayList<BouncingBall> balls = new ArrayList<BouncingBall>(10);
+    private ArrayList<BouncingBall> redBalls = new ArrayList<BouncingBall>(10);
+
     // Класс таймер отвечает за регулярную генерацию событий ActionEvent
     // При создании его экземпляра используется анонимный класс,
     // реализующий интерфейс ActionListener
@@ -38,7 +43,7 @@ public class Field extends JPanel {
         Graphics2D canvas = (Graphics2D) g;
         // Последовательно запросить прорисовку от всех мячей из списка
         for (BouncingBall ball: balls) {
-        ball.paint(canvas);
+            ball.paint(canvas);
         }
     }
     // Метод добавления нового мяча в список
@@ -54,21 +59,31 @@ public class Field extends JPanel {
         // Включить режим паузы
         paused = true;
     }
+    public synchronized void pause1(){
+        paused1 = true;
+    }
     // Метод синхронизированный, т.е. только один поток может
     // одновременно быть внутри
     public synchronized void resume() {
         // Выключить режим паузы
         paused = false;
+        paused1 = false;
+
         // Будим все ожидающие продолжения потоки
         notifyAll();
     }
     // Синхронизированный метод проверки, может ли мяч двигаться
     // (не включен ли режим паузы?)
-    public synchronized void canMove(BouncingBall ball) throws InterruptedException {
-        if (paused) {
-        // Если режим паузы включен, то поток, зашедший
-        // внутрь данного метода, засыпает
-        wait();
+    public synchronized void canMove(BouncingBall ball) throws InterruptedException{
+        if(paused1){
+            if (ball.getColor()==color1){
+                wait();
+            }
+            // Если режим паузы включен, то поток, зашедший
+            // внутрь данного метода, засыпает
+        }
+        if(paused){
+            wait();
         }
     }
 }
